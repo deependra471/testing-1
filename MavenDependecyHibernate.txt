@@ -59,3 +59,171 @@
     <artifactId>slf4j-api</artifactId>
     <version>1.6.1</version>
 </dependency>
+
+
+
+//Code for automatic file upload progress
+ async function indirectDelay()
+      { 
+      	var uploadForm = document.getElementById('uploadForm');
+      	
+		var uploadFormData = new FormData(uploadForm);
+		var xhr = new XMLHttpRequest();
+  		/* xhr.onreadystatechange=function(){
+  		if (xhr.readyState === XMLHttpRequest.DONE) {
+  	
+       	 if (xhr.status === 200) {
+       	// alert(xhr.status);
+       		//window.location.href = "/ProductHierarchy/servlet/com.deere.u90.producthierarchy.view.servlets.LogBeanServlet";
+       		 }
+       	 }
+       
+        }; */
+		  xhr.open('POST', "/ProductHierarchy/servlet/com.deere.u90.producthierarchy.view.servlets.RegionFileUploadTest2", true);
+		 await xhr.send(uploadFormData);
+		   delay(100);
+		    $("#myProgress").show();
+		   $(".progress-uxf").show();
+		  
+		   
+	}
+      
+      function delay(milliseconds) {
+     	var pro = new Promise(function(resolve, reject) {
+     			 setTimeout(function() {
+     			 var request = new XMLHttpRequest();
+     			  request.responseType = 'text';
+      				request.onreadystatechange=function(){
+      				 var elem = document.getElementById('myBar');
+      				 if (request.readyState === XMLHttpRequest.DONE) {
+      				
+       					 if (request.status === 200) {
+       					 	
+       					 var  width=request.responseText *1;
+       					 
+             			  if (width >= 100) {
+             			     window.location.href = "/ProductHierarchy/servlet/com.deere.u90.producthierarchy.view.servlets.LastUpdateBeanServlet";
+            	 			 return;
+         	    			 
+         	  			  } else {
+		         	      width++;
+		         	    
+		         	      elem.style.width = width + '%'; 
+		         	      elem.innerHTML = width * 1  + '%';
+		         	      delay(100);
+		         	  }
+        				  resolve(width);
+       					 } else {
+         						 reject(Error(request.statusText));
+       							 }
+     					 }
+   							 };
+  					  request.onerror = function() {
+  					   window.location.href = "/ProductHierarchy/servlet/com.deere.u90.producthierarchy.view.servlets.LastUpdateBeanServlet";
+   					 //  reject(Error("Network Error"));
+				    };
+				 request.open("GET", "/ProductHierarchy/servlet/com.deere.u90.producthierarchy.view.servlets.FileUploadProgressServlet", true);
+            		request.send(null);
+      }, milliseconds);
+    });
+    
+	return pro;
+  }
+  
+    function loader()
+    {
+     <%
+		if (getServletConfig().getServletContext().getAttribute("flag") != null) {
+		int flagVal = (Integer) getServletConfig().getServletContext().getAttribute("flag");
+		if(flagVal==1){
+		out.println("indirectDelay()");
+		}
+		System.out.println("Flag value is "+flagVal);
+		}
+		%>
+	 }
+     
+     <body onload="loader()" >
+     //Set Application Context for Whole Application getting lock on srceen and refresh button
+     ServletContext application =  getServletConfig().getServletContext();
+     ProductHeirarchyApplication.setApplication(null);
+	ProductHeirarchyApplication.setApplication(application);//Setter accept servlet context Object
+            
+   ///set the progress counter value
+    private void updatePercentOfProgressCounter(int rowNumber, int totalRowCount) {
+		int percent = (int) ((rowNumber * 100) / totalRowCount);
+		//HttpSession session = ProductHeirarchyApplication.getSession();
+		ServletContext application = ProductHeirarchyApplication.getApplication();
+		if (application != null) {
+			application.setAttribute("progressCounter", percent);
+		}
+		/*if (session != null) {
+			session.setAttribute("progressCounter", percent);
+		}*/
+	}
+
+
+///File Upload Servlet
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		response.setContentType("text/plain");
+		response.setCharacterEncoding("UTF-8");
+		int progressCounter = 0;
+		ServletContext application = getServletConfig().getServletContext();
+		// HttpSession session = ProductHeirarchyApplication.getSession();
+
+		if (application == null) {
+			application = getServletConfig().getServletContext();
+		}
+		/*
+		 * if(session== null) { session=
+		 * ProductHeirarchyApplication.getSession(); }
+		 */
+
+		if (application.getAttribute("progressCounter") != null) {
+			progressCounter = Integer.parseInt((String.valueOf(application.getAttribute("progressCounter"))));
+		}
+		/*
+		 * if(session.getAttribute("progressCounter")!= null) { progressCounter
+		 * = Integer.parseInt((String.valueOf(session.getAttribute(
+		 * "progressCounter")))); }
+		 */
+		System.out.println("FileUploadProgressServlet hit.." + progressCounter);
+		response.getWriter().write(String.valueOf(progressCounter));
+
+	}
+    
+    
+    
+    //Css code
+    #myProgress {
+  width: 100%;
+  background-color: #ddd;
+}
+
+#myBar {
+  width: 10%;
+  height: 30px;
+  background-color: #4CAF50;
+  text-align: center;
+  line-height: 30px;
+  color: white;
+}
+
+//HTMl Code
+ <div id="myProgress" style="display:none;">
+  <div id="myBar"></div>
+  
+  
+   <div class="progress-uxf" style="display:none;">
+            <div class="progress-circles-uxf progress-uxf-lg active">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>   
+
+
+
